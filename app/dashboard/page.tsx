@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Image from "next/image";
+import Swal from "sweetalert2";
 import { 
   CheckCircleIcon, 
   PlusCircleIcon, 
@@ -10,7 +11,8 @@ import {
   MusicalNoteIcon,
   ClipboardDocumentListIcon,
   ArrowPathIcon,
-  TrashIcon
+  TrashIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
@@ -28,6 +30,8 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [loadingTasks, setLoadingTasks] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'tasks' | 'spotify'>('tasks');
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+    const [editingTitle, setEditingTitle] = useState<string>("");
     const router = useRouter();
 
     const successToast = (message: string) => (
@@ -50,6 +54,60 @@ export default function Dashboard() {
 
     const showErrorToast = (message: string) => {
         toast.custom(errorToast(message));
+    };
+
+    const handleEditTask = (taskId: string, currentTitle: string) => {
+        setEditingTaskId(taskId);
+        setEditingTitle(currentTitle);
+    };
+
+    const handleSaveEdit = async (taskId: string) => {
+        if (!editingTitle.trim()) {
+            showErrorToast("Task title cannot be empty");
+            return;
+        }
+
+        setLoadingTasks((prev) => new Set([...prev, taskId]));
+        try {
+            const res = await fetch(`/api/tasks/${taskId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ title: editingTitle }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setTasks(
+                    tasks.map((task) =>
+                        task.id === taskId
+                            ? { ...task, title: data.task.title }
+                            : task
+                    )
+                );
+                showSuccessToast("Task updated successfully!");
+                setEditingTaskId(null);
+                setEditingTitle("");
+            } else {
+                const error = await res.json();
+                showErrorToast(`Failed to update task: ${error.message}`);
+            }
+        } catch (error) {
+            console.error("Failed to update task:", error);
+            showErrorToast("Error updating task. Check console for details.");
+        } finally {
+            setLoadingTasks((prev) => {
+                const updated = new Set(prev);
+                updated.delete(taskId);
+                return updated;
+            });
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingTaskId(null);
+        setEditingTitle("");
     };
 
     useEffect(() => {
@@ -178,8 +236,21 @@ export default function Dashboard() {
 
 
     const handleLogout = () => {
-        localStorage.removeItem("userEmail");
-        router.push("/");
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You will be logged out from your account.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#4f46e5",
+            cancelButtonColor: "#ef4444",
+            confirmButtonText: "Yes, logout!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem("userEmail");
+                router.push("/");
+            }
+        });
     };
 
     if (loading) {
@@ -344,27 +415,61 @@ export default function Dashboard() {
                                                 )}
                                             </button>
                                             
-                                            <span
-                                                className={`flex-1 text-lg ${
-                                                    task.completed
-                                                        ? "line-through text-gray-400 dark:text-gray-600"
-                                                        : "text-gray-900 dark:text-white"
-                                                }`}
-                                            >
-                                                {task.title}
-                                            </span>
-                                            
-                                            <button
-                                                onClick={() => handleDeleteTask(task.id)}
-                                                disabled={loadingTasks.has(task.id)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                {loadingTasks.has(task.id) ? (
-                                                    <ArrowPathIcon className="h-5 w-5 text-gray-400 animate-spin" />
-                                                ) : (
-                                                    <TrashIcon className="h-5 w-5 text-red-500 hover:text-red-600 transition-colors" />
-                                                )}
-                                            </button>
+                                            {editingTaskId === task.id ? (
+                                                <div className="flex-1 flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={editingTitle}
+                                                        onChange={(e) => setEditingTitle(e.target.value)}
+                                                        className="flex-1 rounded border border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 text-gray-900 dark:text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        onClick={() => handleSaveEdit(task.id)}
+                                                        className="px-2 py-1 rounded bg-green-500 text-white text-sm hover:bg-green-600"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className="px-2 py-1 rounded bg-gray-300 text-gray-700 text-sm hover:bg-gray-400"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span
+                                                        className={`flex-1 text-lg ${
+                                                            task.completed
+                                                                ? "line-through text-gray-400 dark:text-gray-600"
+                                                                : "text-gray-900 dark:text-white"
+                                                        }`}
+                                                    >
+                                                        {task.title}
+                                                    </span>
+                                                    
+                                                    <button
+                                                        onClick={() => handleEditTask(task.id, task.title)}
+                                                        disabled={loadingTasks.has(task.id)}
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <PencilIcon className="h-5 w-5 text-blue-500 hover:text-blue-600 transition-colors" />
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => handleDeleteTask(task.id)}
+                                                        disabled={loadingTasks.has(task.id)}
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        {loadingTasks.has(task.id) ? (
+                                                            <ArrowPathIcon className="h-5 w-5 text-gray-400 animate-spin" />
+                                                        ) : (
+                                                            <TrashIcon className="h-5 w-5 text-red-500 hover:text-red-600 transition-colors" />
+                                                        )}
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 ))
