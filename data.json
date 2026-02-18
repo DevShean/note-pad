@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "email": "123",
+      "password": "123"
+    },
+    {
+      "email": "1234",
+      "password": "1234"
+    },
+    {
+      "email": "Shean",
+      "password": "123"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "e7a2df5f-a48e-4272-a86e-df0c559dfafc",
+      "userEmail": "1234",
+      "title": "asdad",
+      "completed": true
+    },
+    {
+      "id": "a8b87393-42c2-476d-9b54-cf934254e431",
+      "userEmail": "Shean",
+      "title": "123",
+      "completed": false
+    },
+    {
+      "id": "a8b87393-42c2-476d-9b54-cf934254e432",
+      "userEmail": "Shean",
+      "title": "123",
+      "completed": false
+    }
+  ]
+}
