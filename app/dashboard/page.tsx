@@ -12,7 +12,8 @@ import {
   ClipboardDocumentListIcon,
   ArrowPathIcon,
   TrashIcon,
-  PencilIcon
+  PencilIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
@@ -23,15 +24,23 @@ interface Task {
     completed: boolean;
 }
 
+interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
 export default function Dashboard() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskTitle, setNewTaskTitle] = useState<string>("");
     const [userEmail, setUserEmail] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [loadingTasks, setLoadingTasks] = useState<Set<string>>(new Set());
-    const [activeTab, setActiveTab] = useState<'tasks' | 'spotify'>('tasks');
+    const [activeTab, setActiveTab] = useState<'tasks' | 'spotify' | 'chat' | 'minigames'>('tasks');
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
     const [editingTitle, setEditingTitle] = useState<string>("");
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [chatInput, setChatInput] = useState<string>("");
+    const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
     const router = useRouter();
 
     const successToast = (message: string) => (
@@ -253,6 +262,67 @@ export default function Dashboard() {
         });
     };
 
+    const handleSendMessage = async () => {
+        const trimmedMessage = chatInput.trim();
+
+        if (!trimmedMessage || isSendingMessage) {
+            return;
+        }
+
+        const updatedMessages: ChatMessage[] = [
+            ...chatMessages,
+            { role: "user", content: trimmedMessage },
+        ];
+
+        setChatMessages(updatedMessages);
+        setChatInput("");
+        setIsSendingMessage(true);
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ messages: updatedMessages }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showErrorToast(data.message || "Failed to send message");
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        role: "assistant",
+                        content: "Sorry, I couldn't process that right now.",
+                    },
+                ]);
+                return;
+            }
+
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content: data.reply,
+                },
+            ]);
+        } catch (error) {
+            console.error("Failed to send chat message:", error);
+            showErrorToast("Error sending message. Check console for details.");
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content: "There was a network error. Please try again.",
+                },
+            ]);
+        } finally {
+            setIsSendingMessage(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 flex items-center justify-center">
@@ -304,6 +374,27 @@ export default function Dashboard() {
                                 >
                                     <MusicalNoteIcon className="h-5 w-5 inline mr-2" />
                                     Spotify
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('chat')}
+                                    className={`px-4 py-2 rounded-lg transition-all ${
+                                        activeTab === 'chat'
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30'
+                                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <ChatBubbleLeftRightIcon className="h-5 w-5 inline mr-2" />
+                                    Chat
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('minigames')}
+                                    className={`px-4 py-2 rounded-lg transition-all ${
+                                        activeTab === 'minigames'
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30'
+                                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                    }`}
+                                    >
+                                    Minigames
                                 </button>
                             </div>
                             <button
@@ -476,7 +567,7 @@ export default function Dashboard() {
                             )}
                         </div>
                     </div>
-                ) : (
+                ) : activeTab === "spotify" ? (
                     /* spotify section */
                     <div className="space-y-8">
                         <div className="text-center space-y-4">
@@ -499,7 +590,96 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
-                )}
+                ) : activeTab === "chat" ? (
+                    <div className="space-y-8">
+                        <div className="text-center space-y-4">
+                        <h1 className="text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            AI Chatbot
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+                            Ask anything and get help instantly.
+                        </p>
+                        </div>
+
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700 space-y-4">
+                        <div className="h-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
+                            {chatMessages.length === 0 ? (
+                                <p className="text-gray-500 dark:text-gray-400">No messages yet.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {chatMessages.map((message, index) => (
+                                        <div
+                                            key={`${message.role}-${index}`}
+                                            className={`max-w-[85%] rounded-xl px-4 py-2 text-sm md:text-base ${{
+                                                user: "ml-auto bg-indigo-600 text-white",
+                                                assistant: "mr-auto bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white",
+                                            }[message.role]}`}
+                                        >
+                                            {message.content}
+                                        </div>
+                                    ))}
+                                    {isSendingMessage && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">AI is typing...</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3">
+                            <input
+                            type="text"
+                            placeholder="Type your message..."
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <button
+                            onClick={handleSendMessage}
+                            disabled={isSendingMessage}
+                            className="rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-3 text-white font-medium disabled:opacity-50"
+                            >
+                            {isSendingMessage ? "Sending..." : "Send"}
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                ) : activeTab === "minigames" ? (
+                    <div className="space-y-8">
+                        <div className="text-center space-y-4">
+                        <h1 className="text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            Mini Games
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+                            Take a quick break and have some fun!
+                        </p>
+                        </div>
+
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+                        <div className="aspect-video max-w-5xl mx-auto">
+                            <iframe
+                            className="w-full h-full rounded-xl shadow-2xl"
+                            src="https://hextris.io/"
+                            loading="lazy"
+                            allowFullScreen
+                            title="Hextris"
+                            />
+                        </div>
+
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-3">
+                            If the game does not load, open directly:
+                            <a
+                            href="https://hextris.io/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:underline ml-1"
+                            >
+                            Play Hextris
+                            </a>
+                        </p>
+                        </div>
+                    </div>
+                ) : null }
             </div>
         </div>
     );

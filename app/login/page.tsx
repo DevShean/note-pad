@@ -34,7 +34,7 @@ export default function LoginPage() {
 
             localStorage.setItem("userEmail", email);
             router.replace("/dashboard");
-        } catch (err) {
+        } catch {
             setError("An error occurred during login");
         }
     };
