@@ -354,6 +354,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-4">
                             <div className="flex gap-2">
                                 <button
+                                    style={{ cursor: "pointer" }}
                                     onClick={() => setActiveTab('tasks')}
                                     className={`px-4 py-2 rounded-lg transition-all ${
                                         activeTab === 'tasks'
@@ -365,6 +366,7 @@ export default function Dashboard() {
                                     Tasks
                                 </button>
                                 <button
+                                    style={{ cursor: "pointer" }}
                                     onClick={() => setActiveTab('spotify')}
                                     className={`px-4 py-2 rounded-lg transition-all ${
                                         activeTab === 'spotify'
@@ -375,7 +377,8 @@ export default function Dashboard() {
                                     <MusicalNoteIcon className="h-5 w-5 inline mr-2" />
                                     Spotify
                                 </button>
-                                <button
+                                {/* <button
+                                    style={{ cursor: "pointer" }}
                                     onClick={() => setActiveTab('chat')}
                                     className={`px-4 py-2 rounded-lg transition-all ${
                                         activeTab === 'chat'
@@ -385,8 +388,9 @@ export default function Dashboard() {
                                 >
                                     <ChatBubbleLeftRightIcon className="h-5 w-5 inline mr-2" />
                                     Chat
-                                </button>
+                                </button> */}
                                 <button
+                                    style={{ cursor: "pointer" }}
                                     onClick={() => setActiveTab('minigames')}
                                     className={`px-4 py-2 rounded-lg transition-all ${
                                         activeTab === 'minigames'
@@ -398,6 +402,7 @@ export default function Dashboard() {
                                 </button>
                             </div>
                             <button
+                                style={{ cursor: "pointer" }}
                                 onClick={handleLogout}
                                 className="group flex items-center gap-2 rounded-lg bg-linear-to-r from-red-500 to-red-600 px-4 py-2 text-white transition-all hover:shadow-lg hover:shadow-red-200 dark:hover:shadow-red-900/30"
                             >
@@ -463,6 +468,7 @@ export default function Dashboard() {
                                     className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                                 <button
+                                    style={{ cursor: "pointer" }}
                                     onClick={handleAddTask}
                                     className="group inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-3 text-white font-medium transition-all hover:shadow-lg hover:shadow-indigo-200 dark:hover:shadow-indigo-900/30"
                                 >
@@ -495,6 +501,7 @@ export default function Dashboard() {
                                     >
                                         <div className="flex items-center gap-4">
                                             <button
+                                                style={{ cursor: "pointer" }}
                                                 onClick={() => handleToggleTask(task.id, task.completed)}
                                                 disabled={loadingTasks.has(task.id)}
                                                 className="shrink-0"
@@ -516,12 +523,14 @@ export default function Dashboard() {
                                                         autoFocus
                                                     />
                                                     <button
+                                                        style={{ cursor: "pointer" }}
                                                         onClick={() => handleSaveEdit(task.id)}
                                                         className="px-2 py-1 rounded bg-green-500 text-white text-sm hover:bg-green-600"
                                                     >
                                                         Save
                                                     </button>
                                                     <button
+                                                        style={{ cursor: "pointer" }}
                                                         onClick={handleCancelEdit}
                                                         className="px-2 py-1 rounded bg-gray-300 text-gray-700 text-sm hover:bg-gray-400"
                                                     >
@@ -541,6 +550,7 @@ export default function Dashboard() {
                                                     </span>
                                                     
                                                     <button
+                                                        style={{ cursor: "pointer" }}
                                                         onClick={() => handleEditTask(task.id, task.title)}
                                                         disabled={loadingTasks.has(task.id)}
                                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
@@ -549,6 +559,7 @@ export default function Dashboard() {
                                                     </button>
                                                     
                                                     <button
+                                                        style={{ cursor: "pointer" }}
                                                         onClick={() => handleDeleteTask(task.id)}
                                                         disabled={loadingTasks.has(task.id)}
                                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
@@ -590,60 +601,60 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
-                ) : activeTab === "chat" ? (
-                    <div className="space-y-8">
-                        <div className="text-center space-y-4">
-                        <h1 className="text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            AI Chatbot
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-                            Ask anything and get help instantly.
-                        </p>
-                        </div>
+                // ) : activeTab === "chat" ? (
+                //     <div className="space-y-8">
+                //         <div className="text-center space-y-4">
+                //         <h1 className="text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                //             AI Chatbot
+                //         </h1>
+                //         <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+                //             Ask anything and get help instantly.
+                //         </p>
+                //         </div>
+                        
+                //         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700 space-y-4">
+                //         <div className="h-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
+                //             {chatMessages.length === 0 ? (
+                //                 <p className="text-gray-500 dark:text-gray-400">No messages yet.</p>
+                //             ) : (
+                //                 <div className="space-y-3">
+                //                     {chatMessages.map((message, index) => (
+                //                         <div
+                //                             key={`${message.role}-${index}`}
+                //                             className={`max-w-[85%] rounded-xl px-4 py-2 text-sm md:text-base ${{
+                //                                 user: "ml-auto bg-indigo-600 text-white",
+                //                                 assistant: "mr-auto bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white",
+                //                             }[message.role]}`}
+                //                         >
+                //                             {message.content}
+                //                         </div>
+                //                     ))}
+                //                     {isSendingMessage && (
+                //                         <p className="text-sm text-gray-500 dark:text-gray-400">AI is typing...</p>
+                //                     )}
+                //                 </div>
+                //             )}
+                //         </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700 space-y-4">
-                        <div className="h-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
-                            {chatMessages.length === 0 ? (
-                                <p className="text-gray-500 dark:text-gray-400">No messages yet.</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {chatMessages.map((message, index) => (
-                                        <div
-                                            key={`${message.role}-${index}`}
-                                            className={`max-w-[85%] rounded-xl px-4 py-2 text-sm md:text-base ${{
-                                                user: "ml-auto bg-indigo-600 text-white",
-                                                assistant: "mr-auto bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white",
-                                            }[message.role]}`}
-                                        >
-                                            {message.content}
-                                        </div>
-                                    ))}
-                                    {isSendingMessage && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">AI is typing...</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-3">
-                            <input
-                            type="text"
-                            placeholder="Type your message..."
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                            <button
-                            onClick={handleSendMessage}
-                            disabled={isSendingMessage}
-                            className="rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-3 text-white font-medium disabled:opacity-50"
-                            >
-                            {isSendingMessage ? "Sending..." : "Send"}
-                            </button>
-                        </div>
-                        </div>
-                    </div>
+                //         <div className="flex gap-3">
+                //             <input
+                //             type="text"
+                //             placeholder="Type your message..."
+                //             value={chatInput}
+                //             onChange={(e) => setChatInput(e.target.value)}
+                //             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                //             className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                //             />
+                //             <button
+                //             onClick={handleSendMessage}
+                //             disabled={isSendingMessage}
+                //             className="rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-3 text-white font-medium disabled:opacity-50"
+                //             >
+                //             {isSendingMessage ? "Sending..." : "Send"}
+                //             </button>
+                //         </div>
+                //     </div>
+                //     </div>
                 ) : activeTab === "minigames" ? (
                     <div className="space-y-8">
                         <div className="text-center space-y-4">
